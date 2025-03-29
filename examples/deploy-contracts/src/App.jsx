@@ -10,14 +10,29 @@ const Container = styled.div`
   width: 100%;
   max-width: 100%;
   margin: 0;
-  padding: 0;
+  padding: 0 20px;
   min-height: 100vh;
+  box-sizing: border-box;
 `;
 
 const Header = styled.header`
-  margin-bottom: 32px;
-  text-align: center;
-  padding: 20px 0;
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding: 0;
+`;
+
+const HeaderCard = styled.div`
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  
+  @media (prefers-color-scheme: dark) {
+    background-color: #1f2937;
+    border-color: #374151;
+  }
 `;
 
 const Title = styled.h1`
@@ -33,49 +48,76 @@ const Description = styled.p`
   }
 `;
 
-// Three column layout with right column taking 50% of the space
+// Three column layout
 const ThreeColumnLayout = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr 2fr;
-  gap: 20px;
+  position: relative;
   width: 100%;
-  padding: 0 20px;
   box-sizing: border-box;
-  
-  @media (max-width: 1400px) {
-    grid-template-columns: 1fr 1fr;
-  }
-  
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
+  min-height: calc(100vh - 40px);
 `;
 
 const LeftColumn = styled.div`
-  padding-top: 20px;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: calc(25% - 30px);
+  height: calc(100vh - 40px);
+  overflow-y: auto;
+  
+  @media (max-width: 1400px) {
+    width: calc(33.33% - 30px);
+  }
+  
+  @media (max-width: 900px) {
+    position: static;
+    width: calc(100% - 40px);
+    height: auto;
+    margin-bottom: 20px;
+  }
 `;
 
 const MiddleColumn = styled.div`
-  position: relative;
-  min-width: 0;
-  width: 100%;
+  margin-left: calc(25% + 10px);
+  width: calc(25% - 20px);
   padding-top: 20px;
+  padding-right: 20px;
+  
+  @media (max-width: 1400px) {
+    margin-left: calc(33.33% + 10px);
+    width: calc(66.67% - 30px);
+  }
+  
+  @media (max-width: 900px) {
+    margin-left: 0;
+    width: calc(100% - 40px);
+    padding: 20px 0;
+  }
 `;
 
 const RightColumn = styled.div`
-  min-width: 0;
-  width: 100%;
-  position: relative;
-  padding-top: 20px;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: calc(50% - 30px);
+  height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
   
   @media (max-width: 1400px) {
     display: none;
   }
 `;
 
-const StickyWrapper = styled.div`
-  position: sticky;
-  top: 20px;
+// We don't need the StickyWrapper anymore since the columns are fixed
+const FixedPanelContainer = styled.div`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+`;
+
+const LeftPanelContainer = styled(FixedPanelContainer)`
+  height: auto;
 `;
 
 const Steps = styled.div`
@@ -382,13 +424,6 @@ function App() {
   
   return (
     <Container>
-      <Header>
-        <Title>0G Chain Deploy Tutorial</Title>
-        <Description>
-          Walk through the process of creating a wallet, transferring tokens, and deploying and interacting with a smart contract.
-        </Description>
-      </Header>
-      
       {error && (
         <ErrorBox>
           <strong>Error:</strong> {error}
@@ -397,7 +432,16 @@ function App() {
       
       <ThreeColumnLayout>
         <LeftColumn>
-          <StickyWrapper>
+          <LeftPanelContainer>
+            <Header>
+              <HeaderCard>
+                <Title>0G Chain Deploy Tutorial</Title>
+                <Description>
+                  Walk through the process of creating a wallet, transferring tokens, and deploying and interacting with a smart contract.
+                </Description>
+              </HeaderCard>
+            </Header>
+            
             <StatusCard
               connected={connected}
               blockHeight={blockHeight}
@@ -408,7 +452,7 @@ function App() {
               contractAddress={contractAddress}
               storedValue={storedValue}
             />
-          </StickyWrapper>
+          </LeftPanelContainer>
         </LeftColumn>
         
         <MiddleColumn>
@@ -433,9 +477,9 @@ function App() {
         </MiddleColumn>
         
         <RightColumn>
-          <StickyWrapper>
+          <FixedPanelContainer>
             <TutorialPanel />
-          </StickyWrapper>
+          </FixedPanelContainer>
         </RightColumn>
       </ThreeColumnLayout>
     </Container>
