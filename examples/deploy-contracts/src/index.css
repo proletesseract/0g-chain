@@ -17,16 +17,20 @@
 
 body {
   margin: 0;
+  padding: 0 20px;
   display: flex;
   min-width: 320px;
   min-height: 100vh;
 }
 
 #root {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
   width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root > div:first-child {
+  padding: 0;
 }
 
 @media (prefers-color-scheme: dark) {

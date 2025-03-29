@@ -3,22 +3,19 @@ import styled from 'styled-components';
 import ReactMarkdown from 'react-markdown';
 
 const PanelContainer = styled.div`
-  position: fixed;
-  top: 0;
-  right: ${props => props.isOpen ? '0' : '-800px'};
-  width: 800px;
-  max-width: 90vw;
-  height: 100vh;
   background-color: #ffffff;
-  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
-  transition: right 0.3s ease-in-out;
-  z-index: 1000;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  height: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
   
   @media (prefers-color-scheme: dark) {
     background-color: #1a202c;
-    box-shadow: -4px 0 10px rgba(0, 0, 0, 0.3);
+    border-color: #4a5568;
   }
 `;
 
@@ -36,27 +33,7 @@ const PanelHeader = styled.div`
 
 const PanelTitle = styled.h2`
   margin: 0;
-  font-size: 1.5rem;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #4a5568;
-  
-  &:hover {
-    color: #2d3748;
-  }
-  
-  @media (prefers-color-scheme: dark) {
-    color: #a0aec0;
-    
-    &:hover {
-      color: #e2e8f0;
-    }
-  }
+  font-size: 1.2rem;
 `;
 
 const PanelContent = styled.div`
@@ -65,37 +42,24 @@ const PanelContent = styled.div`
   overflow-y: auto;
 `;
 
-const TutorialButton = styled.button`
-  position: fixed;
-  bottom: 20px;
-  right: ${props => props.isOpen ? '820px' : '20px'};
-  background-color: #3182ce;
-  color: white;
-  border: none;
-  border-radius: 30px;
-  padding: 12px 20px;
-  cursor: pointer;
-  font-weight: 600;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: right 0.3s ease-in-out;
-  z-index: 999;
-  
-  &:hover {
-    background-color: #2b6cb0;
-  }
-  
-  @media (max-width: 768px) {
-    padding: 10px 16px;
-    font-size: 0.9rem;
-  }
-`;
-
 const MarkdownContent = styled.div`
-  font-size: 1rem;
+  font-size: 0.95rem;
   line-height: 1.6;
   
-  h1, h2, h3, h4, h5, h6 {
-    margin-top: 1.5em;
+  h1 {
+    font-size: 1.5rem;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+  }
+  
+  h2 {
+    font-size: 1.3rem;
+    margin-top: 1.2em;
+    margin-bottom: 0.5em;
+  }
+  
+  h3, h4, h5, h6 {
+    margin-top: 1em;
     margin-bottom: 0.5em;
   }
   
@@ -108,15 +72,16 @@ const MarkdownContent = styled.div`
     padding: 0.2em 0.4em;
     border-radius: 3px;
     font-family: monospace;
-    font-size: 0.9em;
+    font-size: 0.85em;
   }
   
   pre {
     background-color: #f5f5f5;
-    padding: 1em;
+    padding: 0.8em;
     border-radius: 5px;
     overflow-x: auto;
     margin: 1em 0;
+    font-size: 0.85em;
   }
   
   pre code {
@@ -133,7 +98,7 @@ const MarkdownContent = styled.div`
   
   ul, ol {
     margin-bottom: 1em;
-    padding-left: 2em;
+    padding-left: 1.5em;
   }
   
   a {
@@ -168,7 +133,6 @@ const MarkdownContent = styled.div`
 `;
 
 const TutorialPanel = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const [tutorialContent, setTutorialContent] = useState('');
   
   useEffect(() => {
@@ -184,31 +148,20 @@ const TutorialPanel = () => {
       });
   }, []);
   
-  const togglePanel = () => {
-    setIsOpen(!isOpen);
-  };
-  
   return (
-    <>
-      <TutorialButton onClick={togglePanel} isOpen={isOpen}>
-        {isOpen ? 'Close Tutorial' : 'Open Tutorial'}
-      </TutorialButton>
+    <PanelContainer>
+      <PanelHeader>
+        <PanelTitle>0G Chain Tutorial</PanelTitle>
+      </PanelHeader>
       
-      <PanelContainer isOpen={isOpen}>
-        <PanelHeader>
-          <PanelTitle>0G Chain Tutorial</PanelTitle>
-          <CloseButton onClick={togglePanel}>&times;</CloseButton>
-        </PanelHeader>
-        
-        <PanelContent>
-          <MarkdownContent>
-            <ReactMarkdown>
-              {tutorialContent}
-            </ReactMarkdown>
-          </MarkdownContent>
-        </PanelContent>
-      </PanelContainer>
-    </>
+      <PanelContent>
+        <MarkdownContent>
+          <ReactMarkdown>
+            {tutorialContent}
+          </ReactMarkdown>
+        </MarkdownContent>
+      </PanelContent>
+    </PanelContainer>
   );
 };
 

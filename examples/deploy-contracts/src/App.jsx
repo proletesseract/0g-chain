@@ -7,14 +7,16 @@ import * as blockchain from './utils/blockchain';
 import { ethers } from 'ethers';
 
 const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
 `;
 
 const Header = styled.header`
   margin-bottom: 32px;
   text-align: center;
+  padding: 20px 0;
 `;
 
 const Title = styled.h1`
@@ -30,12 +32,20 @@ const Description = styled.p`
   }
 `;
 
-const TwoColumnLayout = styled.div`
+// Three column layout with equal width columns and explicit padding
+const ThreeColumnLayout = styled.div`
   display: grid;
-  grid-template-columns: 1fr 400px;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 20px;
+  width: 100%;
+  padding: 0 20px;
+  box-sizing: border-box;
   
-  @media (max-width: 768px) {
+  @media (max-width: 1400px) {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  @media (max-width: 900px) {
     grid-template-columns: 1fr;
   }
 `;
@@ -48,9 +58,19 @@ const LeftColumn = styled.div`
   overflow-x: hidden;
 `;
 
-const RightColumn = styled.div`
+const MiddleColumn = styled.div`
   position: relative;
   min-width: 0;
+  width: 100%;
+`;
+
+const RightColumn = styled.div`
+  min-width: 0;
+  width: 100%;
+  
+  @media (max-width: 1400px) {
+    display: none;
+  }
 `;
 
 const StickyPanel = styled.div`
@@ -375,7 +395,7 @@ function App() {
         </ErrorBox>
       )}
       
-      <TwoColumnLayout>
+      <ThreeColumnLayout>
         <LeftColumn>
           <Steps>
             {tutorialSteps.map((step, index) => (
@@ -397,7 +417,7 @@ function App() {
           </Steps>
         </LeftColumn>
         
-        <RightColumn>
+        <MiddleColumn>
           <StickyPanel>
             <StatusCard
               connected={connected}
@@ -410,10 +430,14 @@ function App() {
               storedValue={storedValue}
             />
           </StickyPanel>
+        </MiddleColumn>
+        
+        <RightColumn>
+          <StickyPanel>
+            <TutorialPanel />
+          </StickyPanel>
         </RightColumn>
-      </TwoColumnLayout>
-      
-      <TutorialPanel />
+      </ThreeColumnLayout>
     </Container>
   );
 }

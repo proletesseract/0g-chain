@@ -10,6 +10,7 @@ const Card = styled.div`
   flex-direction: column;
   gap: 8px;
   width: 100%;
+  box-sizing: border-box;
   
   @media (prefers-color-scheme: dark) {
     background-color: ${props => props.connected ? '#22543d' : '#742a2a'};
