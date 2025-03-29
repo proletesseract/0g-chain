@@ -32,10 +32,10 @@ const Description = styled.p`
   }
 `;
 
-// Three column layout with equal width columns and explicit padding
+// Three column layout with right column taking 50% of the space
 const ThreeColumnLayout = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 2fr;
   gap: 20px;
   width: 100%;
   padding: 0 20px;

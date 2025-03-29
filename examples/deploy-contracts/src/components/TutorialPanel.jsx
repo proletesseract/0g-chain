@@ -47,6 +47,8 @@ const PanelContent = styled.div`
 const MarkdownContent = styled.div`
   font-size: 0.95rem;
   line-height: 1.6;
+  max-width: 900px;
+  margin: 0 auto;
   
   h1 {
     font-size: 1.5rem;
