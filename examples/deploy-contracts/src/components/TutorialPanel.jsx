@@ -6,13 +6,15 @@ const PanelContainer = styled.div`
   background-color: #ffffff;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
-  /* Using the correct header height of 210px */
-  height: calc(100vh - 210px);
+  /* Height is calculated dynamically based on scrollY, but capped at 100vh - 40px */
+  height: ${props => `calc(min(100vh - 40px, 100vh - ${Math.max(0, 210 - props.scrollY)}px))`};
   overflow: hidden;
   display: flex;
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
+  transition: height 0.1s ease-out;
+  margin-top: 0px;
   
   @media (prefers-color-scheme: dark) {
     background-color: #1a202c;
@@ -138,7 +140,27 @@ const MarkdownContent = styled.div`
 
 const TutorialPanel = () => {
   const [tutorialContent, setTutorialContent] = useState('');
+  const [scrollY, setScrollY] = useState(0);
   
+  // Track scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    
+    // Add scroll event listener
+    window.addEventListener('scroll', handleScroll);
+    
+    // Initialize scroll position
+    handleScroll();
+    
+    // Clean up event listener
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+  
+  // Load tutorial content
   useEffect(() => {
     // Load the tutorial markdown content
     fetch('/tutorial.md')
@@ -153,7 +175,7 @@ const TutorialPanel = () => {
   }, []);
   
   return (
-    <PanelContainer>
+    <PanelContainer scrollY={scrollY}>
       <PanelHeader>
         <PanelTitle>0G Chain Tutorial</PanelTitle>
       </PanelHeader>

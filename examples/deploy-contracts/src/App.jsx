@@ -11,6 +11,7 @@ const Container = styled.div`
   max-width: 100%;
   margin: 0;
   padding: 0;
+  min-height: 100vh;
 `;
 
 const Header = styled.header`
@@ -51,39 +52,30 @@ const ThreeColumnLayout = styled.div`
 `;
 
 const LeftColumn = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  overflow-x: hidden;
-  padding-top: 0;
-  margin-top: 0;
+  padding-top: 20px;
 `;
 
 const MiddleColumn = styled.div`
   position: relative;
   min-width: 0;
   width: 100%;
+  padding-top: 20px;
 `;
 
 const RightColumn = styled.div`
   min-width: 0;
   width: 100%;
-  /* Using the correct header height of 210px */
-  height: calc(100vh - 210px);
   position: relative;
+  padding-top: 20px;
   
   @media (max-width: 1400px) {
     display: none;
   }
 `;
 
-const StickyPanel = styled.div`
+const StickyWrapper = styled.div`
   position: sticky;
-  top: 0;
-  width: 100%;
-  z-index: 10;
-  padding-top: 0;
-  margin-top: 0;
+  top: 20px;
 `;
 
 const Steps = styled.div`
@@ -91,6 +83,7 @@ const Steps = styled.div`
   flex-direction: column;
   gap: 16px;
   width: 100%;
+  margin-top: 0;
 `;
 
 const ErrorBox = styled.div`
@@ -106,12 +99,6 @@ const ErrorBox = styled.div`
     color: #fca5a5;
     border-color: #ef4444;
   }
-`;
-
-// Make the StickyPanel in the right column height-constrained too
-const RightStickyPanel = styled(StickyPanel)`
-  height: 100%;
-  overflow: hidden;
 `;
 
 function App() {
@@ -410,7 +397,7 @@ function App() {
       
       <ThreeColumnLayout>
         <LeftColumn>
-          <StickyPanel>
+          <StickyWrapper>
             <StatusCard
               connected={connected}
               blockHeight={blockHeight}
@@ -421,7 +408,7 @@ function App() {
               contractAddress={contractAddress}
               storedValue={storedValue}
             />
-          </StickyPanel>
+          </StickyWrapper>
         </LeftColumn>
         
         <MiddleColumn>
@@ -446,9 +433,9 @@ function App() {
         </MiddleColumn>
         
         <RightColumn>
-          <RightStickyPanel>
+          <StickyWrapper>
             <TutorialPanel />
-          </RightStickyPanel>
+          </StickyWrapper>
         </RightColumn>
       </ThreeColumnLayout>
     </Container>
