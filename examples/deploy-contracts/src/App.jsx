@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import StatusCard from './components/StatusCard';
 import TutorialStep from './components/TutorialStep';
 import * as blockchain from './utils/blockchain';
+import { ethers } from 'ethers';
 
 const Container = styled.div`
   max-width: 1200px;
@@ -96,6 +97,7 @@ function App() {
   
   const [activeStep, setActiveStep] = useState(0);
   const [stepStatus, setStepStatus] = useState([
+    { completed: false, loading: false, result: '', resultType: '' },
     { completed: false, loading: false, result: '', resultType: '' },
     { completed: false, loading: false, result: '', resultType: '' },
     { completed: false, loading: false, result: '', resultType: '' },
@@ -210,8 +212,22 @@ function App() {
     
     try {
       // Deploy the SimpleStorage contract
-      const deployedContract = await blockchain.deploySimpleStorage(userWallet);
-      console.log("Contract deployed:", deployedContract);
+      console.log("Deploying SimpleStorage contract with user account...");
+      
+      // Deploy the SimpleStorage contract
+      const factory = new ethers.ContractFactory(
+        blockchain.SIMPLE_STORAGE_ABI,
+        blockchain.SIMPLE_STORAGE_BYTECODE,
+        userWallet
+      );
+      
+      console.log("Deploying contract...");
+      const deployedContract = await factory.deploy({
+        gasLimit: 1000000,
+        gasPrice: ethers.parseUnits('10', 'gwei')
+      });
+      
+      await deployedContract.waitForDeployment();
       
       const address = await deployedContract.getAddress();
       console.log(`Contract address: ${address}`);
@@ -239,11 +255,56 @@ function App() {
         'success'
       );
       
-      // Mark step as completed - this is the final step now
-      completeStep(2, true);
+      // Mark step as completed and move to next step
+      completeStep(2);
     } catch (error) {
       console.error('Error deploying contract:', error);
       updateStepStatus(2, false, `Error deploying contract: ${error.message}`, 'error');
+    }
+  };
+  
+  // Step 4: Update contract value
+  const updateStoredValue = async () => {
+    if (!contract || !contractAddress) {
+      updateStepStatus(3, false, 'Please deploy the contract first', 'error');
+      return;
+    }
+    
+    updateStepStatus(3, true, '', '');
+    
+    try {
+      // Generate a random value between 1 and 1,000,000
+      const newValue = blockchain.generateRandomValue();
+      console.log(`Setting new value to: ${newValue}`);
+      
+      // Call the set function on the contract
+      const tx = await contract.set(newValue, {
+        gasLimit: 1000000,
+        gasPrice: ethers.parseUnits('10', 'gwei')
+      });
+      
+      console.log(`Transaction sent: ${tx.hash}`);
+      
+      // Wait for transaction confirmation
+      const receipt = await tx.wait();
+      console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
+      
+      // Get the updated value
+      const updatedValue = await contract.get();
+      setStoredValue(updatedValue);
+      
+      updateStepStatus(
+        3,
+        false,
+        `Successfully updated the stored value to ${updatedValue}!\nTransaction hash: ${tx.hash}\nBlock: ${receipt.blockNumber}`,
+        'success'
+      );
+      
+      // Mark step as completed - this is the final step now
+      completeStep(3, true);
+    } catch (error) {
+      console.error('Error updating contract value:', error);
+      updateStepStatus(3, false, `Error updating contract value: ${error.message}`, 'error');
     }
   };
   
@@ -273,7 +334,7 @@ function App() {
     });
     
     // Move to next step if not on the last step
-    if (!isFinalStep && stepIndex < 2) {
+    if (!isFinalStep && stepIndex < 3) {
       setActiveStep(stepIndex + 1);
     }
   };
@@ -297,6 +358,12 @@ function App() {
       description: 'Deploy the SimpleStorage smart contract to the blockchain from your user account.',
       actionLabel: 'Deploy Contract',
       onAction: deployContract
+    },
+    {
+      title: 'Update Stored Value',
+      description: 'Set a random value in the SimpleStorage contract to test its functionality.',
+      actionLabel: 'Update Value',
+      onAction: updateStoredValue
     }
   ];
   
@@ -347,6 +414,7 @@ function App() {
               newAddress={newWallet?.address}
               newBalance={newWalletBalance}
               contractAddress={contractAddress}
+              storedValue={storedValue}
             />
           </StickyPanel>
         </RightColumn>

@@ -67,7 +67,8 @@ const StatusCard = ({
   userBalance, 
   newAddress, 
   newBalance, 
-  contractAddress
+  contractAddress,
+  storedValue
 }) => {
   return (
     <Card connected={connected}>
@@ -114,6 +115,13 @@ const StatusCard = ({
             <StatusItem>
               <Label>Contract Address:</Label>
               <Value>{contractAddress}</Value>
+            </StatusItem>
+          )}
+          
+          {storedValue !== null && storedValue !== undefined && (
+            <StatusItem>
+              <Label>Stored Value:</Label>
+              <Value>{storedValue.toString()}</Value>
             </StatusItem>
           )}
         </>
