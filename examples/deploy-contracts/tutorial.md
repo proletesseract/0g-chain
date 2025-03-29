@@ -75,8 +75,11 @@ Let's walk through each step of the application:
 
 **Behind the scenes**:
 ```javascript
-// Creating a new wallet using ethers.js
-const createNewWallet = () => {
+/**
+ * Creates a new random wallet
+ * @returns {ethers.Wallet} A new random wallet instance
+ */
+export const createNewWallet = () => {
   return ethers.Wallet.createRandom();
 };
 ```
@@ -93,16 +96,26 @@ This creates a cryptographically secure random wallet that can receive tokens an
 
 **Behind the scenes**:
 ```javascript
-// Sending tokens from one address to another
-const sendTokens = async (fromWallet, toAddress, amount) => {
-  // For 0G Chain, we're sending ETH as the underlying currency
-  // but displaying it as ua0gi tokens in the UI
-  const tx = await fromWallet.sendTransaction({
-    to: toAddress,
-    value: ethers.parseEther((amount / 1000).toString()) // Convert 1000 tokens to ETH equivalent
-  });
-  
-  return await tx.wait();
+/**
+ * Sends tokens from one wallet to another address
+ * @param {ethers.Wallet} fromWallet - The sender wallet
+ * @param {string} toAddress - The recipient address
+ * @param {number} amount - The amount to send in ua0gi tokens
+ * @returns {Promise<ethers.TransactionReceipt>} The transaction receipt
+ */
+export const sendTokens = async (fromWallet, toAddress, amount) => {
+  try {
+    // For 0G Chain, we're sending ETH as the underlying currency
+    // but we'll display it as ua0gi tokens in the UI
+    const tx = await fromWallet.sendTransaction({
+      to: toAddress,
+      value: ethers.parseEther((amount / 1000).toString()) // Convert tokens to ETH equivalent
+    });
+    
+    return await tx.wait();
+  } catch (error) {
+    throw error;
+  }
 };
 ```
 
@@ -118,21 +131,30 @@ This sends a transaction on the blockchain, transferring the specified amount of
 
 **Behind the scenes**:
 ```javascript
-// Deploy SimpleStorage contract
-const deploySimpleStorage = async (wallet) => {
-  const factory = new ethers.ContractFactory(
-    SIMPLE_STORAGE_ABI,
-    SIMPLE_STORAGE_BYTECODE,
-    wallet
-  );
-  
-  const contract = await factory.deploy({
-    gasLimit: 1000000,
-    gasPrice: ethers.parseUnits('10', 'gwei')
-  });
-  
-  await contract.waitForDeployment();
-  return contract;
+/**
+ * Deploys a SimpleStorage contract to the blockchain
+ * @param {ethers.Wallet} wallet - The wallet to deploy from
+ * @returns {Promise<ethers.Contract>} The deployed contract instance
+ */
+export const deploySimpleStorage = async (wallet) => {
+  try {
+    const factory = new ethers.ContractFactory(
+      SIMPLE_STORAGE_ABI,
+      SIMPLE_STORAGE_BYTECODE,
+      wallet
+    );
+    
+    // Deploy with explicit gas parameters
+    const contract = await factory.deploy({
+      gasLimit: 1000000, // Higher gas limit for deployment
+      gasPrice: ethers.parseUnits('10', 'gwei')
+    });
+    
+    await contract.waitForDeployment();
+    return contract;
+  } catch (error) {
+    throw error;
+  }
 };
 ```
 
@@ -151,15 +173,35 @@ The SimpleStorage contract has a simple interface:
 
 **Behind the scenes**:
 ```javascript
-// Update stored value in contract
-const setStoredValue = async (contract, value) => {
-  const tx = await contract.set(BigInt(value), {
-    gasLimit: 1000000,
-    gasPrice: ethers.parseUnits('10', 'gwei')
-  });
-  
-  const receipt = await tx.wait();
-  return receipt;
+/**
+ * Sets a new value in the SimpleStorage contract
+ * @param {ethers.Contract} contract - The contract instance
+ * @param {number} value - The value to store
+ * @returns {Promise<ethers.TransactionReceipt>} The transaction receipt
+ */
+export const setStoredValue = async (contract, value) => {
+  try {
+    // Ensure the value is properly formatted as a BigInt
+    const bigIntValue = BigInt(value);
+    
+    // Call the set function with proper gas parameters
+    const tx = await contract.set(bigIntValue, {
+      gasLimit: 1000000,
+      gasPrice: ethers.parseUnits('10', 'gwei')
+    });
+    
+    return await tx.wait();
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Generates a random value between 1 and 1,000,000
+ * @returns {number} A random integer
+ */
+export const generateRandomValue = () => {
+  return Math.floor(Math.random() * 1000000) + 1;
 };
 ```
 
@@ -174,8 +216,16 @@ If you want to build your own application on top of the 0G Chain, here's how to 
 ```javascript
 import { ethers } from 'ethers';
 
-// Connect to the blockchain
-const provider = new ethers.JsonRpcProvider('http://127.0.0.1:8545');
+/**
+ * Creates and tests a connection to the blockchain provider
+ * @returns {Promise<ethers.JsonRpcProvider>} Connected provider instance
+ */
+const getProvider = async () => {
+  const provider = new ethers.JsonRpcProvider('http://127.0.0.1:8545');
+  // Test the connection
+  await provider.getBlockNumber();
+  return provider;
+};
 
 // Create a wallet from a private key
 const wallet = new ethers.Wallet(privateKey, provider);
@@ -187,21 +237,34 @@ const wallet = new ethers.Wallet(privateKey, provider);
 // Generate a random wallet
 const newWallet = ethers.Wallet.createRandom();
 
-// Get balance of an address
+/**
+ * Gets the balance of an address in ua0gi tokens
+ * @param {string} address - The address to check
+ * @param {ethers.JsonRpcProvider} provider - The blockchain provider
+ * @returns {Promise<string>} The balance in ua0gi tokens
+ */
 const getBalance = async (address, provider) => {
   const balance = await provider.getBalance(address);
-  return ethers.formatEther(balance);
+  // Convert the balance from ETH to ua0gi (multiply by 1000)
+  const ua0giBalance = parseFloat(ethers.formatEther(balance)) * 1000;
+  return ua0giBalance.toString();
 };
 ```
 
 ### 3. Sending Transactions
 
 ```javascript
-// Send tokens from one address to another
+/**
+ * Sends tokens from one wallet to another address
+ * @param {ethers.Wallet} fromWallet - The sender wallet
+ * @param {string} toAddress - The recipient address
+ * @param {number} amount - The amount to send in ua0gi tokens
+ * @returns {Promise<ethers.TransactionReceipt>} The transaction receipt
+ */
 const sendTokens = async (fromWallet, toAddress, amount) => {
   const tx = await fromWallet.sendTransaction({
     to: toAddress,
-    value: ethers.parseEther(amount.toString())
+    value: ethers.parseEther((amount / 1000).toString())
   });
   
   // Wait for transaction confirmation
@@ -213,7 +276,13 @@ const sendTokens = async (fromWallet, toAddress, amount) => {
 ### 4. Deploying Smart Contracts
 
 ```javascript
-// Deploy a smart contract
+/**
+ * Deploys a smart contract to the blockchain
+ * @param {ethers.Wallet} wallet - The wallet to deploy from
+ * @param {Array} abi - The contract ABI
+ * @param {string} bytecode - The contract bytecode
+ * @returns {Promise<ethers.Contract>} The deployed contract instance
+ */
 const deployContract = async (wallet, abi, bytecode) => {
   const factory = new ethers.ContractFactory(abi, bytecode, wallet);
   
@@ -230,17 +299,35 @@ const deployContract = async (wallet, abi, bytecode) => {
 ### 5. Interacting with Smart Contracts
 
 ```javascript
-// Get a contract instance at an existing address
+/**
+ * Gets an instance of a contract at a specific address
+ * @param {string} address - The address of the deployed contract
+ * @param {Array} abi - The contract ABI
+ * @param {ethers.Wallet} wallet - The wallet to connect to the contract
+ * @returns {ethers.Contract} The contract instance
+ */
 const getContract = (address, abi, wallet) => {
   return new ethers.Contract(address, abi, wallet);
 };
 
-// Call a read function (no transaction, just reading state)
+/**
+ * Calls a read function on a contract (no transaction, just reading state)
+ * @param {ethers.Contract} contract - The contract instance
+ * @param {string} functionName - The name of the function to call
+ * @param {...any} args - The arguments to pass to the function
+ * @returns {Promise<any>} The return value from the function
+ */
 const readContract = async (contract, functionName, ...args) => {
-  return await contract[functionName](...args);
+  return await contract[functionName](...args, { gasLimit: 100000 });
 };
 
-// Call a write function (creates a transaction, modifies state)
+/**
+ * Calls a write function on a contract (creates a transaction, modifies state)
+ * @param {ethers.Contract} contract - The contract instance
+ * @param {string} functionName - The name of the function to call
+ * @param {...any} args - The arguments to pass to the function
+ * @returns {Promise<ethers.TransactionReceipt>} The transaction receipt
+ */
 const writeContract = async (contract, functionName, ...args) => {
   const tx = await contract[functionName](...args, {
     gasLimit: 1000000,
