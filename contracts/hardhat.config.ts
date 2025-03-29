@@ -23,6 +23,17 @@ const config: HardhatUserConfig = {
         "AA50F4C6C15190D9E18BF8B14FC09BFBA0E7306331A4F232D10A77C2879E7966",
       ],
     },
+    // local 0g-chain network
+    local: {
+      url: "http://127.0.0.1:8545",
+      accounts: [
+        // New test address private key
+        "932EE28CB248E119D0946C86A90F2B2C1598BCB20E5C6AB625E4CEBBD0A417AF",
+      ],
+      chainId: 8888,
+      gas: 6000000,
+      gasPrice: 10000000000,
+    },
     protonet: {
       url: "https://evm.app.protonet.us-east.production.0g-chain.io:443",
       accounts: [
