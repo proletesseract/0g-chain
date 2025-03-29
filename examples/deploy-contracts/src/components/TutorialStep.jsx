@@ -124,9 +124,7 @@ const TutorialStep = ({
   result = '',
   resultType = 'info',
   onAction,
-  actionLabel,
-  secondaryActionLabel,
-  onSecondaryAction
+  actionLabel
 }) => {
   // Function to format result text
   const formatResult = (text) => {
@@ -187,15 +185,6 @@ const TutorialStep = ({
         >
           {loading ? 'Processing...' : actionLabel}
         </ActionButton>
-        
-        {secondaryActionLabel && onSecondaryAction && (
-          <ActionButton 
-            disabled={disabled || loading} 
-            onClick={onSecondaryAction}
-          >
-            {secondaryActionLabel}
-          </ActionButton>
-        )}
       </ActionArea>
       
       {result && (

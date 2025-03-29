@@ -99,7 +99,6 @@ function App() {
     { completed: false, loading: false, result: '', resultType: '' },
     { completed: false, loading: false, result: '', resultType: '' },
     { completed: false, loading: false, result: '', resultType: '' },
-    { completed: false, loading: false, result: '', resultType: '' },
   ]);
   
   // Initialize connection to blockchain
@@ -240,89 +239,11 @@ function App() {
         'success'
       );
       
-      // Mark step as completed and move to next step
-      completeStep(2);
+      // Mark step as completed - this is the final step now
+      completeStep(2, true);
     } catch (error) {
       console.error('Error deploying contract:', error);
       updateStepStatus(2, false, `Error deploying contract: ${error.message}`, 'error');
-    }
-  };
-  
-  // Step 4: Update stored value
-  const updateStoredValue = async () => {
-    if (!contractAddress) {
-      updateStepStatus(3, false, 'Please deploy the contract first', 'error');
-      return;
-    }
-    
-    updateStepStatus(3, true, '', '');
-    
-    try {
-      // Make sure we have a valid contract instance
-      let currentContract = contract;
-      
-      // If the contract instance seems problematic, recreate it from the address
-      if (!currentContract || !currentContract.runner) {
-        console.log("Re-creating contract instance from address");
-        currentContract = blockchain.getSimpleStorage(contractAddress, userWallet);
-        
-        // Store the recreated contract instance
-        setContract(currentContract);
-      }
-      
-      // Double-check the contract instance
-      if (!currentContract) {
-        throw new Error("Unable to get a valid contract instance");
-      }
-      
-      // Verify contract is properly connected
-      const contractAddr = await currentContract.getAddress();
-      console.log(`Contract address: ${contractAddr}`);
-      console.log(`User wallet address: ${userWallet.address}`);
-      
-      // Generate random value
-      const randomValue = blockchain.generateRandomValue();
-      console.log(`Attempting to set value to: ${randomValue}`);
-      
-      // Update stored value with more detailed logging
-      const receipt = await blockchain.setStoredValue(currentContract, randomValue);
-      console.log('Transaction receipt:', receipt);
-      
-      // Get the updated value after a short delay to allow the blockchain to update
-      setTimeout(async () => {
-        try {
-          const updatedValue = await blockchain.getStoredValue(currentContract);
-          console.log(`Retrieved updated value: ${updatedValue}`);
-          setStoredValue(updatedValue);
-        } catch (getError) {
-          console.error('Error retrieving updated value:', getError);
-        }
-      }, 2000);
-      
-      updateStepStatus(
-        3, 
-        false, 
-        `Successfully updated stored value to ${randomValue}${receipt.hash ? `\nTransaction hash: ${receipt.hash}` : ''}${receipt.blockNumber ? `\nBlock: ${receipt.blockNumber}` : ''}`, 
-        'success'
-      );
-      
-      // Mark step as completed
-      completeStep(3);
-    } catch (error) {
-      console.error('Error updating stored value:', error);
-      
-      // Get a more detailed error message
-      const errorMessage = error.reason || error.message || String(error);
-      const errorData = error.data ? `\nError data: ${error.data}` : '';
-      const errorCode = error.code ? `\nError code: ${error.code}` : '';
-      const txHash = error.receipt?.hash ? `\nTransaction hash: ${error.receipt.hash}` : '';
-      
-      updateStepStatus(
-        3, 
-        false, 
-        `Error updating stored value: ${errorMessage}${errorCode}${errorData}${txHash}`, 
-        'error'
-      );
     }
   };
   
@@ -341,7 +262,7 @@ function App() {
   };
   
   // Helper function to mark a step as completed and move to next step
-  const completeStep = (stepIndex) => {
+  const completeStep = (stepIndex, isFinalStep = false) => {
     setStepStatus(prev => {
       const newStatus = [...prev];
       newStatus[stepIndex] = {
@@ -352,7 +273,7 @@ function App() {
     });
     
     // Move to next step if not on the last step
-    if (stepIndex < 3) {
+    if (!isFinalStep && stepIndex < 2) {
       setActiveStep(stepIndex + 1);
     }
   };
@@ -376,14 +297,6 @@ function App() {
       description: 'Deploy the SimpleStorage smart contract to the blockchain from your user account.',
       actionLabel: 'Deploy Contract',
       onAction: deployContract
-    },
-    {
-      title: 'Update Stored Value',
-      description: 'Update the stored value in the contract to a random integer between 1 and 1 million.',
-      actionLabel: 'Update Value',
-      onAction: updateStoredValue,
-      secondaryActionLabel: 'Update Again',
-      onSecondaryAction: updateStoredValue
     }
   ];
   
@@ -419,8 +332,6 @@ function App() {
                 resultType={stepStatus[index].resultType}
                 onAction={step.onAction}
                 actionLabel={step.actionLabel}
-                secondaryActionLabel={step.secondaryActionLabel}
-                onSecondaryAction={step.onSecondaryAction}
               />
             ))}
           </Steps>
@@ -436,7 +347,6 @@ function App() {
               newAddress={newWallet?.address}
               newBalance={newWalletBalance}
               contractAddress={contractAddress}
-              storedValue={storedValue}
             />
           </StickyPanel>
         </RightColumn>
