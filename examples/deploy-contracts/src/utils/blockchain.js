@@ -52,7 +52,10 @@ const PROVIDER_URL = 'http://127.0.0.1:8545';
 // Default user account private key from the tutorial
 const DEFAULT_USER_KEY = '9549F115B0A21E5071A8AEC1B74AC093190E18DD83D019AC6497B0ADFBEFF26D';
 
-// Create provider and connect
+/**
+ * Creates and tests a connection to the blockchain provider
+ * @returns {Promise<ethers.JsonRpcProvider>} Connected provider instance
+ */
 export const getProvider = async () => {
   try {
     const provider = new ethers.JsonRpcProvider(PROVIDER_URL);
@@ -65,43 +68,56 @@ export const getProvider = async () => {
     await Promise.race([blockNumberPromise, timeoutPromise]);
     return provider;
   } catch (error) {
-    console.error('Error connecting to provider:', error);
     throw new Error('Failed to connect to blockchain. Make sure the local testnet is running.');
   }
 };
 
-// Get current block number
+/**
+ * Gets the current block number from the blockchain
+ * @param {ethers.JsonRpcProvider} provider - The blockchain provider
+ * @returns {Promise<number|string>} The current block number or 'Unknown'
+ */
 export const getBlockNumber = async (provider) => {
   try {
     return await provider.getBlockNumber();
   } catch (error) {
-    console.error('Error getting block number:', error);
     return 'Unknown';
   }
 };
 
-// Get wallet from private key
+/**
+ * Creates a wallet instance from a private key
+ * @param {string} privateKey - The private key
+ * @param {ethers.JsonRpcProvider} provider - The blockchain provider
+ * @returns {ethers.Wallet} The wallet instance
+ */
 export const getWallet = (privateKey, provider) => {
   try {
     return new ethers.Wallet(privateKey, provider);
   } catch (error) {
-    console.error('Error creating wallet:', error);
     throw error;
   }
 };
 
-// Get default user wallet
+/**
+ * Gets the default user wallet using the hardcoded key
+ * @returns {Promise<ethers.Wallet>} The default user wallet
+ */
 export const getDefaultUserWallet = async () => {
   try {
     const provider = await getProvider();
     return getWallet(DEFAULT_USER_KEY, provider);
   } catch (error) {
-    console.error('Error getting default user wallet:', error);
     throw error;
   }
 };
 
-// Get account balance
+/**
+ * Gets the balance of an address in ua0gi tokens
+ * @param {string} address - The address to check
+ * @param {ethers.JsonRpcProvider} provider - The blockchain provider
+ * @returns {Promise<string>} The balance in ua0gi tokens
+ */
 export const getBalance = async (address, provider) => {
   try {
     const balance = await provider.getBalance(address);
@@ -109,17 +125,25 @@ export const getBalance = async (address, provider) => {
     const ua0giBalance = parseFloat(ethers.formatEther(balance)) * 1000;
     return ua0giBalance.toString();
   } catch (error) {
-    console.error('Error getting balance:', error);
     return '0';
   }
 };
 
-// Create a new wallet
+/**
+ * Creates a new random wallet
+ * @returns {ethers.Wallet} A new random wallet instance
+ */
 export const createNewWallet = () => {
   return ethers.Wallet.createRandom();
 };
 
-// Send tokens from one address to another
+/**
+ * Sends tokens from one wallet to another address
+ * @param {ethers.Wallet} fromWallet - The sender wallet
+ * @param {string} toAddress - The recipient address
+ * @param {number} amount - The amount to send in ua0gi tokens
+ * @returns {Promise<ethers.TransactionReceipt>} The transaction receipt
+ */
 export const sendTokens = async (fromWallet, toAddress, amount) => {
   try {
     // For 0G Chain, we're sending ETH as the underlying currency
@@ -131,12 +155,15 @@ export const sendTokens = async (fromWallet, toAddress, amount) => {
     
     return await tx.wait();
   } catch (error) {
-    console.error('Error sending tokens:', error);
     throw error;
   }
 };
 
-// Deploy SimpleStorage contract
+/**
+ * Deploys a SimpleStorage contract to the blockchain
+ * @param {ethers.Wallet} wallet - The wallet to deploy from
+ * @returns {Promise<ethers.Contract>} The deployed contract instance
+ */
 export const deploySimpleStorage = async (wallet) => {
   try {
     const factory = new ethers.ContractFactory(
@@ -154,99 +181,67 @@ export const deploySimpleStorage = async (wallet) => {
     await contract.waitForDeployment();
     return contract;
   } catch (error) {
-    console.error('Error deploying contract:', error);
     throw error;
   }
 };
 
-// Get SimpleStorage contract instance
+/**
+ * Gets an instance of the SimpleStorage contract at a specific address
+ * @param {string} contractAddress - The address of the deployed contract
+ * @param {ethers.Wallet} wallet - The wallet to connect to the contract
+ * @returns {ethers.Contract} The contract instance
+ */
 export const getSimpleStorage = (contractAddress, wallet) => {
   try {
-    console.log(`Creating contract instance for ${contractAddress} connected to wallet ${wallet.address}`);
     return new ethers.Contract(contractAddress, SIMPLE_STORAGE_ABI, wallet);
   } catch (error) {
-    console.error('Error getting contract instance:', error);
     throw error;
   }
 };
 
-// Get stored value from contract
+/**
+ * Gets the stored value from the SimpleStorage contract
+ * @param {ethers.Contract} contract - The contract instance
+ * @returns {Promise<number>} The stored value
+ */
 export const getStoredValue = async (contract) => {
   try {
-    console.log(`Calling get() on contract at ${await contract.getAddress()}`);
-    // Add explicit call options
     const value = await contract.get({
       gasLimit: 100000
     });
-    console.log(`Get result: ${value}`);
     return value;
   } catch (error) {
-    console.error('Error getting stored value:', error);
     return 0;
   }
 };
 
-// Update stored value in contract
+/**
+ * Sets a new value in the SimpleStorage contract
+ * @param {ethers.Contract} contract - The contract instance
+ * @param {number} value - The value to store
+ * @returns {Promise<ethers.TransactionReceipt>} The transaction receipt
+ */
 export const setStoredValue = async (contract, value) => {
   try {
-    const contractAddress = await contract.getAddress();
-    console.log(`Calling set function on contract at ${contractAddress} with value: ${value}`);
-    
-    // Debug contract and wallet information
-    console.log(`Contract address: ${contractAddress}`);
-    console.log(`Signer address: ${await contract.runner.getAddress()}`);
-    
-    // Check if the contract interface is correct
-    try {
-      // Verify the contract has the get method first
-      const currentValue = await contract.get();
-      console.log(`Current value before update: ${currentValue}`);
-    } catch (getError) {
-      console.error(`Error getting current value: ${getError.message}`);
-    }
-    
     // Ensure the value is properly formatted as a BigInt
     const bigIntValue = BigInt(value);
-    console.log(`Converted value to BigInt: ${bigIntValue.toString()}`);
     
     // Call the set function with proper gas parameters
-    console.log(`Sending transaction...`);
     const tx = await contract.set(bigIntValue, {
-      gasLimit: 1000000, // Increased gas limit
+      gasLimit: 1000000,
       gasPrice: ethers.parseUnits('10', 'gwei')
     });
     
-    console.log(`Transaction sent: ${tx.hash}`);
-    console.log(`Transaction data: ${tx.data}`); // Debug the transaction data
-    
-    console.log(`Waiting for confirmation...`);
-    const receipt = await tx.wait();
-    
-    console.log(`Transaction confirmed: status=${receipt.status}`);
-    console.log(`Gas used: ${receipt.gasUsed.toString()}`);
-    
-    if (receipt.status === 0) {
-      throw new Error("Transaction failed - contract execution reverted");
-    }
-    
-    return receipt;
+    return await tx.wait();
   } catch (error) {
-    console.error('Error setting stored value:', error);
-    console.error('Error details:', error.code, error.reason || 'No reason provided');
-    
-    if (error.transaction) {
-      console.error('Transaction details:', {
-        from: error.transaction.from,
-        to: error.transaction.to,
-        data: error.transaction.data
-      });
-    }
-    
     throw error;
   }
 };
 
-// Generate random value between 1 and 1,000,000
+/**
+ * Generates a random value between 1 and 1,000,000
+ * @returns {number} A random integer
+ */
 export const generateRandomValue = () => {
   return Math.floor(Math.random() * 1000000) + 1;
 }; 

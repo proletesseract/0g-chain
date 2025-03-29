@@ -165,7 +165,6 @@ function App() {
       // Mark step as completed and move to next step
       completeStep(0);
     } catch (error) {
-      console.error('Error creating new wallet:', error);
       updateStepStatus(0, false, `Error creating wallet: ${error.message}`, 'error');
     }
   };
@@ -201,7 +200,6 @@ function App() {
       // Mark step as completed and move to next step
       completeStep(1);
     } catch (error) {
-      console.error('Error sending tokens:', error);
       updateStepStatus(1, false, `Error sending tokens: ${error.message}`, 'error');
     }
   };
@@ -211,12 +209,8 @@ function App() {
     updateStepStatus(2, true, '', '');
     
     try {
-      // Deploy the SimpleStorage contract
-      console.log("Deploying SimpleStorage contract with user account...");
-      
       // Get current gas price for better estimation
       const gasPrice = await provider.getFeeData().then(data => data.gasPrice);
-      console.log(`Current gas price: ${gasPrice}`);
       
       // Deploy the SimpleStorage contract
       const factory = new ethers.ContractFactory(
@@ -225,35 +219,28 @@ function App() {
         userWallet
       );
       
-      console.log("Deploying contract...");
       const deployedContract = await factory.deploy({
         gasLimit: 2000000, // Higher gas limit for deployment
         gasPrice: gasPrice || ethers.parseUnits('10', 'gwei')
       });
       
-      console.log(`Contract deployment transaction sent: ${deployedContract.deploymentTransaction().hash}`);
-      
-      console.log("Waiting for deployment to complete...");
+      // Wait for deployment to complete
       await deployedContract.waitForDeployment();
       
       const address = await deployedContract.getAddress();
-      console.log(`Contract address: ${address}`);
-      
       setContractAddress(address);
       setContract(deployedContract);
       
-      // Update user balance
+      // Update user balance after deployment (gas fees used)
       const userBalanceUpdated = await blockchain.getBalance(userWallet.address, provider);
       setUserBalance(userBalanceUpdated);
       
-      // Verify contract works by calling get()
+      // Get initial contract value
       try {
-        console.log("Getting initial value...");
         const initialValue = await deployedContract.get({ gasLimit: 100000 });
-        console.log(`Initial contract value: ${initialValue}`);
         setStoredValue(initialValue);
       } catch (getError) {
-        console.error("Error getting initial value:", getError);
+        // Contract may not have initialized value yet
       }
       
       updateStepStatus(
@@ -266,7 +253,6 @@ function App() {
       // Mark step as completed and move to next step
       completeStep(2);
     } catch (error) {
-      console.error('Error deploying contract:', error);
       updateStepStatus(2, false, `Error deploying contract: ${error.message}`, 'error');
     }
   };
@@ -283,36 +269,20 @@ function App() {
     try {
       // Generate a random value between 1 and 1,000,000
       const newValue = blockchain.generateRandomValue();
-      console.log(`Setting new value to: ${newValue}`);
-      
-      // Explicitly create a BigNumber for the value
-      const bigIntValue = ethers.getBigInt(newValue);
-      console.log(`Converted value to BigInt: ${bigIntValue.toString()}`);
       
       // Get current gas price for better estimation
       const gasPrice = await provider.getFeeData().then(data => data.gasPrice);
-      console.log(`Current gas price: ${gasPrice}`);
       
-      // Call the set function on the contract with more parameters
-      const tx = await contract.set(bigIntValue, {
+      // Call the set function on the contract
+      const tx = await contract.set(BigInt(newValue), {
         gasLimit: 1000000,
         gasPrice: gasPrice || ethers.parseUnits('10', 'gwei')
       });
       
-      console.log(`Transaction sent: ${tx.hash}`);
-      console.log(`Transaction data: ${tx.data}`);
-      
       // Wait for transaction confirmation
-      console.log('Waiting for confirmation...');
       const receipt = await tx.wait();
-      console.log(`Transaction confirmed: status=${receipt.status}`);
       
-      if (receipt.status === 0) {
-        throw new Error("Transaction failed - contract execution reverted");
-      }
-      
-      // Get the updated value
-      console.log('Getting updated value...');
+      // Get the updated value from the contract
       const updatedValue = await contract.get({ gasLimit: 100000 });
       setStoredValue(updatedValue);
       
@@ -323,10 +293,9 @@ function App() {
         'success'
       );
       
-      // Mark step as completed - this is the final step now
+      // Mark step as completed - this is the final step
       completeStep(3, true);
     } catch (error) {
-      console.error('Error updating contract value:', error);
       updateStepStatus(3, false, `Error updating contract value: ${error.message}`, 'error');
     }
   };

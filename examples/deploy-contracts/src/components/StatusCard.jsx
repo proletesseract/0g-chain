@@ -60,6 +60,18 @@ const Value = styled.span`
   }
 `;
 
+/**
+ * StatusCard component - Displays current blockchain and application state
+ * 
+ * @param {boolean} connected - Whether we're connected to the blockchain
+ * @param {number} blockHeight - Current blockchain block height
+ * @param {string} userAddress - Current user wallet address
+ * @param {string} userBalance - Current user wallet balance
+ * @param {string} newAddress - New generated wallet address
+ * @param {string} newBalance - New wallet balance
+ * @param {string} contractAddress - Deployed contract address
+ * @param {string|number} storedValue - Value stored in the contract
+ */
 const StatusCard = ({ 
   connected = false, 
   blockHeight, 

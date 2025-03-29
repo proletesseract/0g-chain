@@ -113,6 +113,21 @@ const CodeBlock = styled.pre`
   }
 `;
 
+/**
+ * TutorialStep component - Displays a single step in the tutorial with actions and results
+ * 
+ * @param {number} stepNumber - The sequence number of this step
+ * @param {string} title - The title of this step
+ * @param {string} description - The description of what this step does
+ * @param {boolean} active - Whether this step is currently active
+ * @param {boolean} disabled - Whether this step is currently disabled
+ * @param {boolean} completed - Whether this step has been completed
+ * @param {boolean} loading - Whether this step is currently processing
+ * @param {string} result - Result message to display
+ * @param {string} resultType - Type of result (success/error/info)
+ * @param {Function} onAction - Function to call when action button is clicked
+ * @param {string} actionLabel - Label for the action button
+ */
 const TutorialStep = ({
   stepNumber,
   title,
@@ -126,46 +141,9 @@ const TutorialStep = ({
   onAction,
   actionLabel
 }) => {
-  // Function to format result text
+  // Function to format result text for display
   const formatResult = (text) => {
     if (!text) return '';
-    
-    // Check if this is a transaction error message
-    if (resultType === 'error' && text.includes('Transaction hash:')) {
-      // Extract the main error message
-      const errorParts = text.split(/Error updating stored value:|Error code:|Transaction hash:/);
-      const mainError = errorParts[1]?.trim() || "Unknown error";
-      
-      // Find transaction hash if it exists
-      const txHashMatch = text.match(/Transaction hash: (0x[a-fA-F0-9]+)/);
-      const txHash = txHashMatch ? txHashMatch[1] : null;
-      
-      // Find error code if it exists
-      const errorCodeMatch = text.match(/Error code: ([A-Z_]+)/);
-      const errorCode = errorCodeMatch ? errorCodeMatch[1] : null;
-      
-      return (
-        <>
-          <div><strong>Error:</strong> {mainError}</div>
-          {errorCode && <div><strong>Code:</strong> {errorCode}</div>}
-          {txHash && (
-            <div>
-              <strong>Transaction:</strong>
-              <CodeBlock>{txHash}</CodeBlock>
-            </div>
-          )}
-          {text.includes('receipt={') && (
-            <details>
-              <summary>View transaction details</summary>
-              <CodeBlock>
-                {text.substring(text.indexOf('receipt={'))}
-              </CodeBlock>
-            </details>
-          )}
-        </>
-      );
-    }
-    
     return text;
   };
   
