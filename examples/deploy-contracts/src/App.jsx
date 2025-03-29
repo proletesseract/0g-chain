@@ -214,6 +214,10 @@ function App() {
       // Deploy the SimpleStorage contract
       console.log("Deploying SimpleStorage contract with user account...");
       
+      // Get current gas price for better estimation
+      const gasPrice = await provider.getFeeData().then(data => data.gasPrice);
+      console.log(`Current gas price: ${gasPrice}`);
+      
       // Deploy the SimpleStorage contract
       const factory = new ethers.ContractFactory(
         blockchain.SIMPLE_STORAGE_ABI,
@@ -223,10 +227,13 @@ function App() {
       
       console.log("Deploying contract...");
       const deployedContract = await factory.deploy({
-        gasLimit: 1000000,
-        gasPrice: ethers.parseUnits('10', 'gwei')
+        gasLimit: 2000000, // Higher gas limit for deployment
+        gasPrice: gasPrice || ethers.parseUnits('10', 'gwei')
       });
       
+      console.log(`Contract deployment transaction sent: ${deployedContract.deploymentTransaction().hash}`);
+      
+      console.log("Waiting for deployment to complete...");
       await deployedContract.waitForDeployment();
       
       const address = await deployedContract.getAddress();
@@ -241,7 +248,8 @@ function App() {
       
       // Verify contract works by calling get()
       try {
-        const initialValue = await deployedContract.get();
+        console.log("Getting initial value...");
+        const initialValue = await deployedContract.get({ gasLimit: 100000 });
         console.log(`Initial contract value: ${initialValue}`);
         setStoredValue(initialValue);
       } catch (getError) {
@@ -277,20 +285,35 @@ function App() {
       const newValue = blockchain.generateRandomValue();
       console.log(`Setting new value to: ${newValue}`);
       
-      // Call the set function on the contract
-      const tx = await contract.set(newValue, {
+      // Explicitly create a BigNumber for the value
+      const bigIntValue = ethers.getBigInt(newValue);
+      console.log(`Converted value to BigInt: ${bigIntValue.toString()}`);
+      
+      // Get current gas price for better estimation
+      const gasPrice = await provider.getFeeData().then(data => data.gasPrice);
+      console.log(`Current gas price: ${gasPrice}`);
+      
+      // Call the set function on the contract with more parameters
+      const tx = await contract.set(bigIntValue, {
         gasLimit: 1000000,
-        gasPrice: ethers.parseUnits('10', 'gwei')
+        gasPrice: gasPrice || ethers.parseUnits('10', 'gwei')
       });
       
       console.log(`Transaction sent: ${tx.hash}`);
+      console.log(`Transaction data: ${tx.data}`);
       
       // Wait for transaction confirmation
+      console.log('Waiting for confirmation...');
       const receipt = await tx.wait();
-      console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
+      console.log(`Transaction confirmed: status=${receipt.status}`);
+      
+      if (receipt.status === 0) {
+        throw new Error("Transaction failed - contract execution reverted");
+      }
       
       // Get the updated value
-      const updatedValue = await contract.get();
+      console.log('Getting updated value...');
+      const updatedValue = await contract.get({ gasLimit: 100000 });
       setStoredValue(updatedValue);
       
       updateStepStatus(
