@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import StatusCard from './components/StatusCard';
 import TutorialStep from './components/TutorialStep';
+import TutorialPanel from './components/TutorialPanel';
 import * as blockchain from './utils/blockchain';
 import { ethers } from 'ethers';
 
@@ -411,6 +412,8 @@ function App() {
           </StickyPanel>
         </RightColumn>
       </TwoColumnLayout>
+      
+      <TutorialPanel />
     </Container>
   );
 }
