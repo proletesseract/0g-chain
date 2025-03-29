@@ -5,7 +5,7 @@ import TutorialStep from './components/TutorialStep';
 import * as blockchain from './utils/blockchain';
 
 const Container = styled.div`
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
 `;
@@ -28,10 +28,40 @@ const Description = styled.p`
   }
 `;
 
+const TwoColumnLayout = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 20px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const LeftColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  overflow-x: hidden;
+`;
+
+const RightColumn = styled.div`
+  position: relative;
+  min-width: 0;
+`;
+
+const StickyPanel = styled.div`
+  position: sticky;
+  top: 20px;
+  width: 100%;
+`;
+
 const Steps = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
 `;
 
 const ErrorBox = styled.div`
@@ -372,37 +402,45 @@ function App() {
         </ErrorBox>
       )}
       
-      <StatusCard
-        connected={connected}
-        blockHeight={blockHeight}
-        userAddress={userWallet?.address}
-        userBalance={userBalance}
-        newAddress={newWallet?.address}
-        newBalance={newWalletBalance}
-        contractAddress={contractAddress}
-        storedValue={storedValue}
-      />
-      
-      <Steps>
-        {tutorialSteps.map((step, index) => (
-          <TutorialStep
-            key={index}
-            stepNumber={index + 1}
-            title={step.title}
-            description={step.description}
-            active={activeStep === index}
-            disabled={!connected || activeStep < index}
-            completed={stepStatus[index].completed}
-            loading={stepStatus[index].loading}
-            result={stepStatus[index].result}
-            resultType={stepStatus[index].resultType}
-            onAction={step.onAction}
-            actionLabel={step.actionLabel}
-            secondaryActionLabel={step.secondaryActionLabel}
-            onSecondaryAction={step.onSecondaryAction}
-          />
-        ))}
-      </Steps>
+      <TwoColumnLayout>
+        <LeftColumn>
+          <Steps>
+            {tutorialSteps.map((step, index) => (
+              <TutorialStep
+                key={index}
+                stepNumber={index + 1}
+                title={step.title}
+                description={step.description}
+                active={activeStep === index}
+                disabled={!connected || activeStep < index}
+                completed={stepStatus[index].completed}
+                loading={stepStatus[index].loading}
+                result={stepStatus[index].result}
+                resultType={stepStatus[index].resultType}
+                onAction={step.onAction}
+                actionLabel={step.actionLabel}
+                secondaryActionLabel={step.secondaryActionLabel}
+                onSecondaryAction={step.onSecondaryAction}
+              />
+            ))}
+          </Steps>
+        </LeftColumn>
+        
+        <RightColumn>
+          <StickyPanel>
+            <StatusCard
+              connected={connected}
+              blockHeight={blockHeight}
+              userAddress={userWallet?.address}
+              userBalance={userBalance}
+              newAddress={newWallet?.address}
+              newBalance={newWalletBalance}
+              contractAddress={contractAddress}
+              storedValue={storedValue}
+            />
+          </StickyPanel>
+        </RightColumn>
+      </TwoColumnLayout>
     </Container>
   );
 }

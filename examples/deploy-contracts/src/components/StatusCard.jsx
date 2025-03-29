@@ -6,10 +6,10 @@ const Card = styled.div`
   border: 1px solid ${props => props.connected ? '#9ae6b4' : '#feb2b2'};
   border-radius: 8px;
   padding: 16px;
-  margin-bottom: 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
   
   @media (prefers-color-scheme: dark) {
     background-color: ${props => props.connected ? '#22543d' : '#742a2a'};
@@ -21,6 +21,7 @@ const Title = styled.h2`
   margin: 0;
   font-size: 1.2rem;
   color: ${props => props.connected ? '#2f855a' : '#c53030'};
+  margin-bottom: 8px;
   
   @media (prefers-color-scheme: dark) {
     color: ${props => props.connected ? '#9ae6b4' : '#feb2b2'};
@@ -29,7 +30,7 @@ const Title = styled.h2`
 
 const StatusItem = styled.div`
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   padding: 8px 0;
   border-bottom: 1px solid #eee;
   
@@ -44,16 +45,15 @@ const StatusItem = styled.div`
 
 const Label = styled.span`
   font-weight: 500;
+  margin-bottom: 4px;
 `;
 
 const Value = styled.span`
   font-family: monospace;
   background: rgba(0, 0, 0, 0.05);
-  padding: 2px 6px;
+  padding: 4px 8px;
   border-radius: 4px;
-  max-width: 380px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  word-break: break-all;
   
   @media (prefers-color-scheme: dark) {
     background: rgba(255, 255, 255, 0.1);

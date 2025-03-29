@@ -87,10 +87,29 @@ const ResultMessage = styled.div`
   background-color: ${props => props.type === 'success' ? '#c6f6d5' : props.type === 'error' ? '#fed7d7' : '#e2e8f0'};
   color: ${props => props.type === 'success' ? '#2f855a' : props.type === 'error' ? '#c53030' : '#4a5568'};
   font-size: 0.9rem;
+  max-width: 100%;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
   
   @media (prefers-color-scheme: dark) {
     background-color: ${props => props.type === 'success' ? '#22543d' : props.type === 'error' ? '#742a2a' : '#4a5568'};
     color: white;
+  }
+`;
+
+const CodeBlock = styled.pre`
+  margin: 8px 0;
+  padding: 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+  font-family: monospace;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  
+  @media (prefers-color-scheme: dark) {
+    background: rgba(255, 255, 255, 0.1);
   }
 `;
 
@@ -109,6 +128,49 @@ const TutorialStep = ({
   secondaryActionLabel,
   onSecondaryAction
 }) => {
+  // Function to format result text
+  const formatResult = (text) => {
+    if (!text) return '';
+    
+    // Check if this is a transaction error message
+    if (resultType === 'error' && text.includes('Transaction hash:')) {
+      // Extract the main error message
+      const errorParts = text.split(/Error updating stored value:|Error code:|Transaction hash:/);
+      const mainError = errorParts[1]?.trim() || "Unknown error";
+      
+      // Find transaction hash if it exists
+      const txHashMatch = text.match(/Transaction hash: (0x[a-fA-F0-9]+)/);
+      const txHash = txHashMatch ? txHashMatch[1] : null;
+      
+      // Find error code if it exists
+      const errorCodeMatch = text.match(/Error code: ([A-Z_]+)/);
+      const errorCode = errorCodeMatch ? errorCodeMatch[1] : null;
+      
+      return (
+        <>
+          <div><strong>Error:</strong> {mainError}</div>
+          {errorCode && <div><strong>Code:</strong> {errorCode}</div>}
+          {txHash && (
+            <div>
+              <strong>Transaction:</strong>
+              <CodeBlock>{txHash}</CodeBlock>
+            </div>
+          )}
+          {text.includes('receipt={') && (
+            <details>
+              <summary>View transaction details</summary>
+              <CodeBlock>
+                {text.substring(text.indexOf('receipt={'))}
+              </CodeBlock>
+            </details>
+          )}
+        </>
+      );
+    }
+    
+    return text;
+  };
+  
   return (
     <StepContainer active={active} disabled={disabled}>
       <StepHeader>
@@ -138,7 +200,7 @@ const TutorialStep = ({
       
       {result && (
         <ResultMessage type={resultType}>
-          {result}
+          {formatResult(result)}
         </ResultMessage>
       )}
     </StepContainer>
