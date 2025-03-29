@@ -53,9 +53,10 @@ const ThreeColumnLayout = styled.div`
 const LeftColumn = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
   width: 100%;
   overflow-x: hidden;
+  padding-top: 0;
+  margin-top: 0;
 `;
 
 const MiddleColumn = styled.div`
@@ -67,6 +68,9 @@ const MiddleColumn = styled.div`
 const RightColumn = styled.div`
   min-width: 0;
   width: 100%;
+  /* Using the correct header height of 210px */
+  height: calc(100vh - 210px);
+  position: relative;
   
   @media (max-width: 1400px) {
     display: none;
@@ -75,8 +79,11 @@ const RightColumn = styled.div`
 
 const StickyPanel = styled.div`
   position: sticky;
-  top: 20px;
+  top: 0;
   width: 100%;
+  z-index: 10;
+  padding-top: 0;
+  margin-top: 0;
 `;
 
 const Steps = styled.div`
@@ -99,6 +106,12 @@ const ErrorBox = styled.div`
     color: #fca5a5;
     border-color: #ef4444;
   }
+`;
+
+// Make the StickyPanel in the right column height-constrained too
+const RightStickyPanel = styled(StickyPanel)`
+  height: 100%;
+  overflow: hidden;
 `;
 
 function App() {
@@ -397,6 +410,21 @@ function App() {
       
       <ThreeColumnLayout>
         <LeftColumn>
+          <StickyPanel>
+            <StatusCard
+              connected={connected}
+              blockHeight={blockHeight}
+              userAddress={userWallet?.address}
+              userBalance={userBalance}
+              newAddress={newWallet?.address}
+              newBalance={newWalletBalance}
+              contractAddress={contractAddress}
+              storedValue={storedValue}
+            />
+          </StickyPanel>
+        </LeftColumn>
+        
+        <MiddleColumn>
           <Steps>
             {tutorialSteps.map((step, index) => (
               <TutorialStep
@@ -415,27 +443,12 @@ function App() {
               />
             ))}
           </Steps>
-        </LeftColumn>
-        
-        <MiddleColumn>
-          <StickyPanel>
-            <StatusCard
-              connected={connected}
-              blockHeight={blockHeight}
-              userAddress={userWallet?.address}
-              userBalance={userBalance}
-              newAddress={newWallet?.address}
-              newBalance={newWalletBalance}
-              contractAddress={contractAddress}
-              storedValue={storedValue}
-            />
-          </StickyPanel>
         </MiddleColumn>
         
         <RightColumn>
-          <StickyPanel>
+          <RightStickyPanel>
             <TutorialPanel />
-          </StickyPanel>
+          </RightStickyPanel>
         </RightColumn>
       </ThreeColumnLayout>
     </Container>

@@ -6,7 +6,8 @@ const PanelContainer = styled.div`
   background-color: #ffffff;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
-  height: 100%;
+  /* Using the correct header height of 210px */
+  height: calc(100vh - 210px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -39,7 +40,8 @@ const PanelTitle = styled.h2`
 const PanelContent = styled.div`
   flex: 1;
   padding: 16px;
-  overflow-y: auto;
+  overflow-y: auto; /* Enable vertical scrolling */
+  height: calc(100% - 53px); /* Account for header height */
 `;
 
 const MarkdownContent = styled.div`
