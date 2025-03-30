@@ -6,66 +6,52 @@ This tutorial will guide you through using the 0G Chain blockchain to create a w
 
 Before starting this tutorial, ensure you have:
 
-- Node.js (v16+) and npm installed
+- Node.js (v18+) and npm (v10+) installed
 - A running 0G Chain local testnet
 - Git to clone the repository (if not done already)
+- `jq` command-line tool for JSON processing (required for localtestnet.sh)
+- Windows users must use WSL (Windows Subsystem for Linux)
 
 ## Getting Started
 
-1. Start your 0G Chain local testnet:
+1. Install required system dependencies:
+   ```bash
+   # Install jq (required for localtestnet.sh)
+   sudo apt-get update && sudo apt-get install -y jq
+   ```
 
-```bash
-./localtestnet.sh
-```
+2. Start your 0G Chain local testnet (from the project root directory):
+   ```bash
+   # Make sure you're in the project root directory
+   cd /mnt/c/Users/craig/Documents/GitHub/0g-chain
+   
+   # Run the local testnet script
+   ./localtestnet.sh
+   ```
 
-2. Open a new terminal window and navigate to the deploy-contracts example directory:
+3. Open a new terminal window and navigate to the deploy-contracts example directory:
+   ```bash
+   # Navigate to the deploy-contracts directory
+   cd /mnt/c/Users/craig/Documents/GitHub/0g-chain/examples/deploy-contracts
+   ```
 
-```bash
-cd examples/deploy-contracts
-```
+4. Install the required dependencies:
+   ```bash
+   npm install
+   ```
 
-3. Install the required dependencies:
+5. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-```bash
-npm install
-```
-
-4. Start the development server:
-
-```bash
-npm run dev
-```
-
-5. Open your browser and navigate to [http://localhost:3000](http://localhost:3000)
-
-## Understanding the 0G Chain Interface
-
-The 0G Chain blockchain interface provides several key functionalities for interacting with the blockchain:
-
-### Connection and Status
-
-The application connects to your local 0G Chain testnet running at `http://127.0.0.1:8545`. The right panel displays real-time information about:
-
-- Connection status to the 0G Chain
-- Current block height
-- User account address and balance
-- New wallet details when created
-- Contract address and stored value once deployed
-
-### Blockchain Interaction
-
-The application uses the `ethers.js` library to interact with the 0G Chain. Key functionalities include:
-
-- Creating wallet addresses
-- Sending tokens (displayed as ua0gi tokens in the UI)
-- Deploying smart contracts
-- Executing contract functions
+6. Open your browser and navigate to [http://localhost:3000](http://localhost:3000)
 
 ## Step-by-Step Tutorial
 
 Let's walk through each step of the application:
 
-### Step 1: Create a New Wallet
+### Step 1: Create a New Wallet {#create-wallet}
 
 **Objective**: Generate a new Ethereum-compatible wallet address for testing.
 
@@ -86,7 +72,7 @@ export const createNewWallet = () => {
 
 This creates a cryptographically secure random wallet that can receive tokens and interact with the blockchain.
 
-### Step 2: Send Tokens to the New Wallet
+### Step 2: Send Tokens to the New Wallet {#send-tokens}
 
 **Objective**: Transfer tokens from your testnet account to the newly created wallet.
 
@@ -121,7 +107,7 @@ export const sendTokens = async (fromWallet, toAddress, amount) => {
 
 This sends a transaction on the blockchain, transferring the specified amount of tokens from one address to another.
 
-### Step 3: Deploy the SimpleStorage Contract
+### Step 3: Deploy the SimpleStorage Contract {#deploy-contract}
 
 **Objective**: Deploy a smart contract to the blockchain.
 
@@ -163,7 +149,7 @@ The SimpleStorage contract has a simple interface:
 - `get()`: Retrieves the stored value
 - `DataChanged` event: Emitted when the value is changed
 
-### Step 4: Update the Stored Value
+### Step 4: Update the Stored Value {#update-value}
 
 **Objective**: Interact with the deployed smart contract by updating its stored value.
 
@@ -206,138 +192,6 @@ export const generateRandomValue = () => {
 ```
 
 This sends a transaction to call the `set` function on the smart contract, updating its stored value.
-
-## How to Implement Your Own Blockchain Application
-
-If you want to build your own application on top of the 0G Chain, here's how to get started:
-
-### 1. Setting up the Blockchain Connection
-
-```javascript
-import { ethers } from 'ethers';
-
-/**
- * Creates and tests a connection to the blockchain provider
- * @returns {Promise<ethers.JsonRpcProvider>} Connected provider instance
- */
-const getProvider = async () => {
-  const provider = new ethers.JsonRpcProvider('http://127.0.0.1:8545');
-  // Test the connection
-  await provider.getBlockNumber();
-  return provider;
-};
-
-// Create a wallet from a private key
-const wallet = new ethers.Wallet(privateKey, provider);
-```
-
-### 2. Creating and Managing Wallets
-
-```javascript
-// Generate a random wallet
-const newWallet = ethers.Wallet.createRandom();
-
-/**
- * Gets the balance of an address in ua0gi tokens
- * @param {string} address - The address to check
- * @param {ethers.JsonRpcProvider} provider - The blockchain provider
- * @returns {Promise<string>} The balance in ua0gi tokens
- */
-const getBalance = async (address, provider) => {
-  const balance = await provider.getBalance(address);
-  // Convert the balance from ETH to ua0gi (multiply by 1000)
-  const ua0giBalance = parseFloat(ethers.formatEther(balance)) * 1000;
-  return ua0giBalance.toString();
-};
-```
-
-### 3. Sending Transactions
-
-```javascript
-/**
- * Sends tokens from one wallet to another address
- * @param {ethers.Wallet} fromWallet - The sender wallet
- * @param {string} toAddress - The recipient address
- * @param {number} amount - The amount to send in ua0gi tokens
- * @returns {Promise<ethers.TransactionReceipt>} The transaction receipt
- */
-const sendTokens = async (fromWallet, toAddress, amount) => {
-  const tx = await fromWallet.sendTransaction({
-    to: toAddress,
-    value: ethers.parseEther((amount / 1000).toString())
-  });
-  
-  // Wait for transaction confirmation
-  const receipt = await tx.wait();
-  return receipt;
-};
-```
-
-### 4. Deploying Smart Contracts
-
-```javascript
-/**
- * Deploys a smart contract to the blockchain
- * @param {ethers.Wallet} wallet - The wallet to deploy from
- * @param {Array} abi - The contract ABI
- * @param {string} bytecode - The contract bytecode
- * @returns {Promise<ethers.Contract>} The deployed contract instance
- */
-const deployContract = async (wallet, abi, bytecode) => {
-  const factory = new ethers.ContractFactory(abi, bytecode, wallet);
-  
-  const contract = await factory.deploy({
-    gasLimit: 1000000,
-    gasPrice: ethers.parseUnits('10', 'gwei')
-  });
-  
-  await contract.waitForDeployment();
-  return contract;
-};
-```
-
-### 5. Interacting with Smart Contracts
-
-```javascript
-/**
- * Gets an instance of a contract at a specific address
- * @param {string} address - The address of the deployed contract
- * @param {Array} abi - The contract ABI
- * @param {ethers.Wallet} wallet - The wallet to connect to the contract
- * @returns {ethers.Contract} The contract instance
- */
-const getContract = (address, abi, wallet) => {
-  return new ethers.Contract(address, abi, wallet);
-};
-
-/**
- * Calls a read function on a contract (no transaction, just reading state)
- * @param {ethers.Contract} contract - The contract instance
- * @param {string} functionName - The name of the function to call
- * @param {...any} args - The arguments to pass to the function
- * @returns {Promise<any>} The return value from the function
- */
-const readContract = async (contract, functionName, ...args) => {
-  return await contract[functionName](...args, { gasLimit: 100000 });
-};
-
-/**
- * Calls a write function on a contract (creates a transaction, modifies state)
- * @param {ethers.Contract} contract - The contract instance
- * @param {string} functionName - The name of the function to call
- * @param {...any} args - The arguments to pass to the function
- * @returns {Promise<ethers.TransactionReceipt>} The transaction receipt
- */
-const writeContract = async (contract, functionName, ...args) => {
-  const tx = await contract[functionName](...args, {
-    gasLimit: 1000000,
-    gasPrice: ethers.parseUnits('10', 'gwei')
-  });
-  
-  const receipt = await tx.wait();
-  return receipt;
-};
-```
 
 ## Common Issues and Troubleshooting
 

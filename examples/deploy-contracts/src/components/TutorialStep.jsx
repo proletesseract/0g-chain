@@ -139,12 +139,23 @@ const TutorialStep = ({
   result = '',
   resultType = 'info',
   onAction,
-  actionLabel
+  actionLabel,
+  dataId,
 }) => {
   // Function to format result text for display
   const formatResult = (text) => {
     if (!text) return '';
     return text;
+  };
+
+  // Handle action button click
+  const handleActionClick = (e) => {
+    if (dataId) {
+      window.location.hash = dataId;
+    }
+    if (onAction) {
+      onAction(e);
+    }
   };
   
   return (
@@ -159,7 +170,8 @@ const TutorialStep = ({
         <ActionButton 
           primary 
           disabled={disabled || loading} 
-          onClick={onAction}
+          onClick={handleActionClick}
+          data-id={dataId}
         >
           {loading ? 'Processing...' : actionLabel}
         </ActionButton>

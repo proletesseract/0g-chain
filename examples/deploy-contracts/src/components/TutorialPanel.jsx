@@ -151,6 +151,70 @@ const TutorialPanel = () => {
         setTutorialContent('# Tutorial Not Found\n\nSorry, the tutorial content could not be loaded.');
       });
   }, []);
+
+  // Handle hash changes and scroll to section
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1); // Remove the # symbol
+      if (hash) {
+        const element = document.getElementById(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    };
+
+    // Handle initial hash
+    handleHashChange();
+
+    // Handle hash changes
+    window.addEventListener('hashchange', handleHashChange);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
+  // Custom components for ReactMarkdown to handle heading IDs
+  const components = {
+    h1: ({ children }) => {
+      const text = Array.isArray(children) ? children.join('') : children.toString();
+      const id = text.match(/\{#([^}]+)\}/)?.[1];
+      const content = text.replace(/\{#([^}]+)\}/, '').trim();
+      return <h1 id={id}>{content}</h1>;
+    },
+    h2: ({ children }) => {
+      const text = Array.isArray(children) ? children.join('') : children.toString();
+      const id = text.match(/\{#([^}]+)\}/)?.[1];
+      const content = text.replace(/\{#([^}]+)\}/, '').trim();
+      return <h2 id={id}>{content}</h2>;
+    },
+    h3: ({ children }) => {
+      const text = Array.isArray(children) ? children.join('') : children.toString();
+      const id = text.match(/\{#([^}]+)\}/)?.[1];
+      const content = text.replace(/\{#([^}]+)\}/, '').trim();
+      return <h3 id={id}>{content}</h3>;
+    },
+    h4: ({ children }) => {
+      const text = Array.isArray(children) ? children.join('') : children.toString();
+      const id = text.match(/\{#([^}]+)\}/)?.[1];
+      const content = text.replace(/\{#([^}]+)\}/, '').trim();
+      return <h4 id={id}>{content}</h4>;
+    },
+    h5: ({ children }) => {
+      const text = Array.isArray(children) ? children.join('') : children.toString();
+      const id = text.match(/\{#([^}]+)\}/)?.[1];
+      const content = text.replace(/\{#([^}]+)\}/, '').trim();
+      return <h5 id={id}>{content}</h5>;
+    },
+    h6: ({ children }) => {
+      const text = Array.isArray(children) ? children.join('') : children.toString();
+      const id = text.match(/\{#([^}]+)\}/)?.[1];
+      const content = text.replace(/\{#([^}]+)\}/, '').trim();
+      return <h6 id={id}>{content}</h6>;
+    }
+  };
   
   return (
     <PanelContainer>
@@ -160,7 +224,7 @@ const TutorialPanel = () => {
       
       <PanelContent>
         <MarkdownContent>
-          <ReactMarkdown>
+          <ReactMarkdown components={components}>
             {tutorialContent}
           </ReactMarkdown>
         </MarkdownContent>

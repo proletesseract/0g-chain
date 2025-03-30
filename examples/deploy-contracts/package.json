@@ -4,8 +4,7 @@
   "description": "A React app to walk through the 0G Chain deployment tutorial",
   "type": "module",
   "scripts": {
-    "copy-tutorial": "node copy-tutorial.cjs",
-    "dev": "npm run copy-tutorial && vite",
+    "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },

@@ -400,25 +400,29 @@ function App() {
       title: 'Create New Address',
       description: 'Generate a new Ethereum wallet address. This will create a random private key and address for testing purposes.',
       actionLabel: 'Create New Address',
-      onAction: createNewAddress
+      onAction: createNewAddress,
+      dataId: 'create-wallet'
     },
     {
       title: 'Send Tokens',
       description: 'Send 1000 ua0gi tokens from your user account to the newly created address.',
       actionLabel: 'Send 1000 ua0gi',
-      onAction: sendTokensToNewAddress
+      onAction: sendTokensToNewAddress,
+      dataId: 'send-tokens'
     },
     {
       title: 'Deploy SimpleStorage Contract',
       description: 'Deploy the SimpleStorage smart contract to the blockchain from your user account.',
       actionLabel: 'Deploy Contract',
-      onAction: deployContract
+      onAction: deployContract,
+      dataId: 'deploy-contract'
     },
     {
       title: 'Update Stored Value',
       description: 'Set a random value in the SimpleStorage contract to test its functionality.',
       actionLabel: 'Update Value',
-      onAction: updateStoredValue
+      onAction: updateStoredValue,
+      dataId: 'update-value'
     }
   ];
   
@@ -471,6 +475,7 @@ function App() {
                 resultType={stepStatus[index].resultType}
                 onAction={step.onAction}
                 actionLabel={step.actionLabel}
+                dataId={step.dataId}
               />
             ))}
           </Steps>
