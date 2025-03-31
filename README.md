@@ -58,7 +58,7 @@ Continue reading [here](https://docs.0g.ai/intro) if you want to learn more abou
 2. **Build the project**
    ```bash
    # In WSL Ubuntu
-   make install
+   make clean && make build
    ```
 
 3. **Run the local testnet**
